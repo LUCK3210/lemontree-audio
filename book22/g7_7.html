@@ -1,0 +1,20 @@
+<!doctype html><html lang="en"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>시침</title>
+<style>
+body{font-family:-apple-system,sans-serif;background:#fcfaf5;color:#2d2d2d;
+text-align:center;display:flex;flex-direction:column;justify-content:center;
+align-items:center;min-height:90vh;margin:0;padding:24px}
+.ko{font-size:104px;font-weight:800;color:#43a047;line-height:1.15;max-width:680px}
+.ro{font-size:40px;color:#d8435a;font-weight:700;margin:8px 0}
+.en{font-size:24px;color:#888;margin-top:10px;max-width:640px}
+button{margin-top:28px;font-size:30px;width:96px;height:96px;border:none;
+border-radius:50%;background:#43a047;color:#fff}
+small{display:block;margin-top:18px;color:#aaa}
+</style>
+<div class="ko">시침</div><div class="ro">si-chim</div><div class="en">hour hand</div>
+<button onclick="p()">&#9654;</button><small>Tap to hear the sound</small>
+<audio id="a" src="g7_7.mp3"></audio>
+<script>function p(){document.getElementById('a').play()}
+window.addEventListener('load',()=>{document.getElementById('a').play().catch(()=>{})});</script>
+</html>
