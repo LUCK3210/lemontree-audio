@@ -1,0 +1,48 @@
+<!doctype html><html lang="ko"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>마지막 손님 · 한국괴담</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{font-family:'Noto Serif KR',-apple-system,serif;background:#0b0b12;color:#e7e4ee;
+ margin:0;min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+ align-items:center;text-align:center;padding:28px;
+ background-image:radial-gradient(circle at 50% 18%,#1b1b2e 0%,#0b0b12 60%)}
+.series{letter-spacing:.45em;color:#9a8fb0;font-size:13px;margin-bottom:10px}
+.title{font-size:30px;font-weight:700;color:#efeaf6;margin:6px 0 4px;line-height:1.3}
+.region{color:#7d7494;font-size:14px;margin-bottom:30px}
+.btns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+button{padding:18px 26px;border:none;border-radius:40px;cursor:pointer;font-family:inherit;
+ background:#211f33;color:#cdbf9a;font-size:18px;box-shadow:0 0 0 1px #3a3550, 0 8px 30px #000a;
+ transition:transform .15s}
+button:active{transform:scale(.94)}
+button.playing{background:#cdbf9a;color:#16151f}
+.hint{margin-top:24px;color:#6f6788;font-size:14px;letter-spacing:.04em}
+.foot{position:fixed;bottom:18px;color:#46415c;font-size:12px;letter-spacing:.2em}
+a{color:#9a8fb0}
+</style>
+<div class="series">한국괴담 · 밤에 듣는 이야기</div>
+<div class="title">마지막 손님</div>
+<div class="region">서울 도심 · The Last Fare</div>
+<div class="btns">
+  <button id="b_ko" onclick="t('ko')">▶ 한국어로 듣기</button>
+  <button id="b_en" onclick="t('en')">▶ Listen in English</button>
+</div>
+<div class="hint" id="h">불을 끄고, 이어폰을 끼세요</div>
+<audio id="a_ko" src="s1_ko.mp3" preload="none"></audio>
+<audio id="a_en" src="s1_en.mp3" preload="none"></audio>
+<div class="foot">한국괴담 · Lemontree</div>
+<script>
+var A={ko:document.getElementById('a_ko'),en:document.getElementById('a_en')};
+var B={ko:document.getElementById('b_ko'),en:document.getElementById('b_en')};
+var L={ko:'▶ 한국어로 듣기',en:'▶ Listen in English'};
+var h=document.getElementById('h');
+function t(x){
+  var o=x=='ko'?'en':'ko';
+  A[o].pause();B[o].textContent=L[o];B[o].classList.remove('playing');
+  if(A[x].paused){A[x].play();B[x].textContent=(x=='ko'?'⏸ 일시정지':'⏸ Pause');B[x].classList.add('playing');h.textContent=(x=='ko'?'듣는 중…':'Now playing…');}
+  else{A[x].pause();B[x].textContent=L[x];B[x].classList.remove('playing');h.textContent='불을 끄고, 이어폰을 끼세요';}
+}
+['ko','en'].forEach(function(x){A[x].addEventListener('ended',function(){B[x].textContent=L[x];B[x].classList.remove('playing');h.textContent='다시 들으려면 ▶';});});
+</script></html>

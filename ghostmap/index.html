@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>한국괴담 지도 · Korea Ghost Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#0b0b12;color:#e7e4ee;font-family:'Noto Serif KR',serif}
+header{position:fixed;top:0;left:0;right:0;z-index:1000;padding:14px 18px;
+ background:linear-gradient(#0b0b12ee,#0b0b1200);display:flex;align-items:center;gap:14px}
+header h1{font-size:19px;margin:0;font-weight:700;letter-spacing:.02em}
+header .sub{color:#9a8fb0;font-size:12px;letter-spacing:.35em}
+header .lang{margin-left:auto;display:flex;gap:6px}
+header .lang button{background:#211f33;color:#cdbf9a;border:1px solid #3a3550;border-radius:20px;
+ padding:6px 14px;cursor:pointer;font-family:inherit;font-size:13px}
+header .lang button.on{background:#cdbf9a;color:#16151f}
+#map{position:absolute;top:0;bottom:0;left:0;right:0}
+.leaflet-popup-content-wrapper{background:#16161f;color:#e7e4ee;border:1px solid #3a3550;border-radius:12px}
+.leaflet-popup-tip{background:#16161f}
+.pop .vol{color:#9a8fb0;font-size:12px;letter-spacing:.2em}
+.pop .reg{font-size:18px;font-weight:700;margin:3px 0 8px}
+.pop .st{color:#cdbf9a;font-size:14px;margin:2px 0}
+.pop a{display:inline-block;margin-top:10px;margin-right:8px;padding:8px 14px;border-radius:20px;
+ background:#211f33;color:#cdbf9a;text-decoration:none;font-size:13px;border:1px solid #3a3550}
+.ghost-pin{filter:drop-shadow(0 0 6px #000)}
+#themes{position:relative;z-index:500;background:#0b0b12;padding:40px 18px 60px;border-top:1px solid #2a2740}
+#themes h2{text-align:center;color:#cdbf9a;letter-spacing:.3em;font-weight:400;font-size:15px}
+#themes .sub{text-align:center;color:#6f6788;font-size:12px;margin-bottom:24px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;max-width:1100px;margin:0 auto}
+.card{background:#16161f;border:1px solid #2a2740;border-radius:14px;padding:16px}
+.card .vol{color:#7d7494;font-size:12px;letter-spacing:.2em}
+.card .reg{font-size:16px;font-weight:700;margin:4px 0 8px}
+.card .st{color:#9a8fb0;font-size:13px;margin:2px 0}
+.card a{display:inline-block;margin-top:10px;padding:7px 13px;border-radius:18px;background:#211f33;
+ color:#cdbf9a;text-decoration:none;font-size:12px;border:1px solid #3a3550}
+.scrolldown{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:900;
+ color:#9a8fb0;font-size:12px;letter-spacing:.2em;background:#16161fcc;padding:8px 16px;border-radius:20px;border:1px solid #3a3550}
+footer{text-align:center;color:#46415c;font-size:12px;padding:24px;letter-spacing:.2em}
+</style></head>
+<body>
+<header>
+  <div><h1 data-ko="한국괴담 지도" data-en="Korea Ghost Map">한국괴담 지도</h1>
+  <div class="sub">LEMONTREE · 밤에 듣는 이야기</div></div>
+  <div class="lang"><button id="bko" class="on" onclick="setLang('ko')">한국어</button>
+  <button id="ben" onclick="setLang('en')">EN</button></div>
+</header>
+<div id="map"></div>
+<div class="scrolldown" data-ko="↓ 전국 테마 괴담 16편" data-en="↓ 16 themed tales (nationwide)">↓ 전국 테마 괴담 16편</div>
+<div id="themes">
+  <h2 data-ko="전국 테마 괴담" data-en="NATIONWIDE THEMES">전국 테마 괴담</h2>
+  <div class="sub" data-ko="특정 지역이 아닌, 한국 어디에나 있는 이야기" data-en="Not one place — tales found everywhere in Korea">특정 지역이 아닌, 한국 어디에나 있는 이야기</div>
+  <div class="grid" id="grid"></div>
+</div>
+<footer>© Lemontree · Korean Ghost Stories — scan, listen, and don't look behind you.</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const DATA = [{"no": 1, "region_ko": "서울 도심", "region_en": "Seoul · The Capital After Dark", "titles_ko": ["마지막 손님", "막차"], "titles_en": ["The Last Fare", "The Last Train"], "audio": "../horror01/", "theme": false, "lat": 37.5512, "lng": 126.9882}, {"no": 2, "region_ko": "서울 궁궐", "region_en": "Seoul · The Palace After Dark", "titles_ko": ["야간 순찰", "동물원이 있던 자리"], "titles_en": ["The Night Watch", "Where the Zoo Used to Be"], "audio": "../horror02/", "theme": false, "lat": 37.5796, "lng": 126.977}, {"no": 3, "region_ko": "서울 한강·다리", "region_en": "Seoul · Beneath the Bridges", "titles_ko": ["난간 너머", "물안개"], "titles_en": ["Over the Railing", "River Fog"], "audio": "../horror03/", "theme": false, "lat": 37.5283, "lng": 126.9352}, {"no": 4, "region_ko": "경기 곤지암", "region_en": "Gyeonggi · The Abandoned Place", "titles_ko": ["남은 차트", "벽을 따라"], "titles_en": ["The Last Chart", "Along the Wall"], "audio": "../horror04/", "theme": false, "lat": 37.3478, "lng": 127.3206}, {"no": 5, "region_ko": "경기 광주·이천", "region_en": "Gyeonggi · Roads That Don't End", "titles_ko": ["태워 드릴게요", "마지막 주유"], "titles_en": ["I'll Give You a Ride", "The Last Stop for Gas"], "audio": "../horror05/", "theme": false, "lat": 37.27, "lng": 127.44}, {"no": 6, "region_ko": "경기 수원·화성", "region_en": "Gyeonggi · The Old Fortress Town", "titles_ko": ["한 굽이 앞", "셋방"], "titles_en": ["One Bend Ahead", "The Rented Room"], "audio": "../horror06/", "theme": false, "lat": 37.288, "lng": 127.0142}, {"no": 7, "region_ko": "경기 북부 접경", "region_en": "Gyeonggi · The Quiet Border", "titles_ko": ["초병", "저녁이 켜지는 마을"], "titles_en": ["The Sentry", "The Village That Lights Itself at Dusk"], "audio": "../horror07/", "theme": false, "lat": 38.04, "lng": 126.9}, {"no": 8, "region_ko": "인천·강화", "region_en": "Incheon · Island of Salt and Fog", "titles_ko": ["회전목마", "물 빠진 갯벌"], "titles_en": ["The Carousel", "When the Tide Goes Out"], "audio": "../horror08/", "theme": false, "lat": 37.7466, "lng": 126.488}, {"no": 9, "region_ko": "강원 폐광촌", "region_en": "Gangwon · The Sunken Mines", "titles_ko": ["막장", "사택 한 채"], "titles_en": ["The Deepest Seam", "The Company House"], "audio": "../horror09/", "theme": false, "lat": 37.164, "lng": 128.9856}, {"no": 10, "region_ko": "강원 산악", "region_en": "Gangwon · The Mountain Won't Let You Leave", "titles_ko": ["대피소의 밤", "하산(下山)"], "titles_en": ["Night at the Shelter", "The Way Down"], "audio": "../horror10/", "theme": false, "lat": 38.1196, "lng": 128.4655}, {"no": 11, "region_ko": "강원 동해안", "region_en": "Gangwon · Tide of the East Sea", "titles_ko": ["등댓불", "밤낚시"], "titles_en": ["The Keeper's Light", "Night Fishing"], "audio": "../horror11/", "theme": false, "lat": 37.7519, "lng": 128.8761}, {"no": 12, "region_ko": "충북 내륙", "region_en": "Chungbuk · The Inland Hush", "titles_ko": ["백팔 계단", "외딴집 제삿날"], "titles_en": ["One Hundred and Eight Steps", "The Memorial Night"], "audio": "../horror12/", "theme": false, "lat": 36.54, "lng": 127.87}, {"no": 13, "region_ko": "충남 계룡산", "region_en": "Chungnam · The Mountain of Gods", "titles_ko": ["기도터", "굿당의 등"], "titles_en": ["The Praying Place", "Lanterns at the Shrine"], "audio": "../horror13/", "theme": false, "lat": 36.35, "lng": 127.21}, {"no": 14, "region_ko": "충남 서해", "region_en": "Chungnam · Where the Mudflats Breathe", "titles_ko": ["갯골", "폐염전"], "titles_en": ["The Tidal Channel", "The Abandoned Salt Field"], "audio": "../horror14/", "theme": false, "lat": 36.7456, "lng": 126.298}, {"no": 15, "region_ko": "대전·세종", "region_en": "Daejeon · New City, Old Ground", "titles_ko": ["미분양", "옮긴 자리"], "titles_en": ["Unsold", "The Moved Grave"], "audio": "../horror15/", "theme": false, "lat": 36.48, "lng": 127.289}, {"no": 16, "region_ko": "전북 전주·지리산", "region_en": "Jeonbuk · The Hanok and the Peak", "titles_ko": ["대청마루", "산장 일지"], "titles_en": ["The Wooden Hall", "The Lodge Logbook"], "audio": "../horror16/", "theme": false, "lat": 35.815, "lng": 127.153}, {"no": 17, "region_ko": "전북 군산·변산", "region_en": "Jeonbuk · Port of the Forgotten", "titles_ko": ["적산가옥", "변산 밤바다"], "titles_en": ["The Colonial House", "The Night Sea at Byeonsan"], "audio": "../horror17/", "theme": false, "lat": 35.9676, "lng": 126.737}, {"no": 18, "region_ko": "전남 진도·완도", "region_en": "Jeonnam · The Sea Road Between Islands", "titles_ko": ["바닷길이 열릴 때", "섬 펜션"], "titles_en": ["When the Sea Road Opens", "The Island Pension"], "audio": "../horror18/", "theme": false, "lat": 34.48, "lng": 126.263}, {"no": 19, "region_ko": "전남 무속", "region_en": "Jeonnam · The Shaman's Night", "titles_ko": ["씻김", "당산나무"], "titles_en": ["The Cleansing Rite", "The Village Tree"], "audio": "../horror19/", "theme": false, "lat": 34.8, "lng": 126.7}, {"no": 20, "region_ko": "전남 섬마을", "region_en": "Jeonnam · One Hundred Islands", "titles_ko": ["분교의 종", "빈집"], "titles_en": ["The Schoolhouse Bell", "The Empty House"], "audio": "../horror20/", "theme": false, "lat": 34.8276, "lng": 126.1086}, {"no": 21, "region_ko": "광주", "region_en": "Gwangju · The City That Remembers", "titles_ko": ["골목의 끝", "옛 극장"], "titles_en": ["The End of the Alley", "The Old Cinema"], "audio": "../horror21/", "theme": false, "lat": 35.1468, "lng": 126.9165}, {"no": 22, "region_ko": "경북 안동 종가", "region_en": "Gyeongbuk · The Head House", "titles_ko": ["제주(祭主)", "탈"], "titles_en": ["The Rite-Keeper", "The Mask"], "audio": "../horror22/", "theme": false, "lat": 36.5684, "lng": 128.7294}, {"no": 23, "region_ko": "경북 경주 능묘", "region_en": "Gyeongbuk · Among the Royal Tombs", "titles_ko": ["발굴 일지", "능 사이로"], "titles_en": ["The Excavation Diary", "Between the Mounds"], "audio": "../horror23/", "theme": false, "lat": 35.8356, "lng": 129.2194}, {"no": 24, "region_ko": "경북 영주·문경 고개", "region_en": "Gyeongbuk · The Pass of No Return", "titles_ko": ["새재 옛길", "주막터"], "titles_en": ["The Old Mountain Pass", "The Inn That Isn't There"], "audio": "../horror24/", "theme": false, "lat": 36.75, "lng": 128.07}, {"no": 25, "region_ko": "경남 지리산", "region_en": "Gyeongnam · The South Face", "titles_ko": ["청학동 가는 길", "계곡 물소리"], "titles_en": ["The Road to Cheonghak", "The Sound of the Valley"], "audio": "../horror25/", "theme": false, "lat": 35.27, "lng": 127.78}, {"no": 26, "region_ko": "경남 통영·거제", "region_en": "Gyeongnam · The Drowned Coast", "titles_ko": ["뱃고동", "폐조선소"], "titles_en": ["The Foghorn", "The Closed Shipyard"], "audio": "../horror26/", "theme": false, "lat": 34.8544, "lng": 128.4331}, {"no": 27, "region_ko": "부산 영도·송도", "region_en": "Busan · The Bridge and the Cliff", "titles_ko": ["다리가 들릴 때", "절벽 위 집"], "titles_en": ["When the Bridge Lifts", "The House on the Cliff"], "audio": "../horror27/", "theme": false, "lat": 35.09, "lng": 129.04}, {"no": 28, "region_ko": "부산 도심", "region_en": "Busan · Neon and Shadow", "titles_ko": ["산복도로", "새벽 시장"], "titles_en": ["The Hillside Road", "The Dawn Market"], "audio": "../horror28/", "theme": false, "lat": 35.11, "lng": 129.03}, {"no": 29, "region_ko": "대구", "region_en": "Daegu · The Basin of Heat", "titles_ko": ["골목 안 이발소", "옛집 수리"], "titles_en": ["The Barbershop in the Alley", "Renovating the Old House"], "audio": "../horror29/", "theme": false, "lat": 35.8714, "lng": 128.6014}, {"no": 30, "region_ko": "울산", "region_en": "Ulsan · Smoke Over the Water", "titles_ko": ["야간 교대", "간절곶 첫 빛"], "titles_en": ["The Night Shift", "The First Light"], "audio": "../horror30/", "theme": false, "lat": 35.36, "lng": 129.36}, {"no": 31, "region_ko": "제주 신화", "region_en": "Jeju · Where the Gods Still Walk", "titles_ko": ["오름을 베고", "영등이 드는 날"], "titles_en": ["Cradled by the Oreum", "The Day the Wind Goddess Comes"], "audio": "../horror31/", "theme": false, "lat": 33.38, "lng": 126.55}, {"no": 32, "region_ko": "제주 바다·해녀", "region_en": "Jeju · Daughters of the Deep", "titles_ko": ["물숨", "불턱"], "titles_en": ["The Last Breath", "The Fire Pit"], "audio": "../horror32/", "theme": false, "lat": 33.5, "lng": 126.53}, {"no": 33, "region_ko": "제주 4·3의 그늘", "region_en": "Jeju · The Island's Long Memory", "titles_ko": ["동백이 지는 자리", "저녁연기"], "titles_en": ["Where the Camellias Fall", "Smoke at Dusk"], "audio": "../horror33/", "theme": false, "lat": 33.3, "lng": 126.4}, {"no": 34, "region_ko": "제주 중산간", "region_en": "Jeju · The Misted Highlands", "titles_ko": ["곶자왈", "안개 속 목장"], "titles_en": ["The Tangled Forest", "The Pasture in the Fog"], "audio": "../horror34/", "theme": false, "lat": 33.38, "lng": 126.45}, {"no": 35, "region_ko": "테마 · 폐교", "region_en": "Theme · The Empty Schools", "titles_ko": ["마지막 수업", "급식소"], "titles_en": ["The Final Lesson", "The Cafeteria"], "audio": "../horror35/", "theme": true}, {"no": 36, "region_ko": "테마 · 터널과 고개", "region_en": "Theme · Tunnels & Passes", "titles_ko": ["폐터널", "고갯마루"], "titles_en": ["The Sealed Tunnel", "The Crest of the Pass"], "audio": "../horror36/", "theme": true}, {"no": 37, "region_ko": "테마 · 다리와 강", "region_en": "Theme · Bridges & Black Water", "titles_ko": ["난간의 손자국", "수문"], "titles_en": ["Handprints on the Rail", "The Floodgate"], "audio": "../horror37/", "theme": true}, {"no": 38, "region_ko": "테마 · 산과 등산로", "region_en": "Theme · The Mountain Trails", "titles_ko": ["리본", "산신각"], "titles_en": ["The Trail Markers", "The Mountain Shrine"], "audio": "../horror38/", "theme": true}, {"no": 39, "region_ko": "테마 · 바다와 섬", "region_en": "Theme · The Sea & the Islands", "titles_ko": ["한 사람 더", "용왕맞이"], "titles_en": ["One More Aboard", "Greeting the Sea King"], "audio": "../horror39/", "theme": true}, {"no": 40, "region_ko": "테마 · 무당·굿·신내림", "region_en": "Theme · Shamans & Spirits", "titles_ko": ["내림", "대신 받은 굿"], "titles_en": ["The Calling", "The Rite Held in My Name"], "audio": "../horror40/", "theme": true}, {"no": 41, "region_ko": "테마 · 폐병원", "region_en": "Theme · The Closed Wards", "titles_ko": ["회진", "냉동고"], "titles_en": ["The Rounds", "The Cold Room"], "audio": "../horror41/", "theme": true}, {"no": 42, "region_ko": "테마 · 군대 괴담", "region_en": "Theme · Tales from the Barracks", "titles_ko": ["마지막 초소", "관물대"], "titles_en": ["The Last Post", "The Empty Locker"], "audio": "../horror42/", "theme": true}, {"no": 43, "region_ko": "테마 · 학교 괴담", "region_en": "Theme · School After Hours", "titles_ko": ["넷째 칸", "음악실"], "titles_en": ["The Fourth Stall", "The Music Room"], "audio": "../horror43/", "theme": true}, {"no": 44, "region_ko": "테마 · 아파트·고시원·원룸", "region_en": "Theme · Rooms in the City", "titles_ko": ["옆방", "윗집"], "titles_en": ["Next Door", "Upstairs"], "audio": "../horror44/", "theme": true}, {"no": 45, "region_ko": "테마 · 무덤·명당·이장", "region_en": "Theme · Graves & Geomancy", "titles_ko": ["이장하는 날", "명당"], "titles_en": ["Moving Day", "The Auspicious Site"], "audio": "../horror45/", "theme": true}, {"no": 46, "region_ko": "테마 · 절·암자", "region_en": "Theme · Temples in the Dark", "titles_ko": ["산중 암자", "돌아보는 불상"], "titles_en": ["The Hermitage", "The Statue That Turns"], "audio": "../horror46/", "theme": true}, {"no": 47, "region_ko": "테마 · 제사·집안 내력", "region_en": "Theme · Ancestral Rites", "titles_ko": ["한 자리 더", "종가 며느리"], "titles_en": ["One More Seat", "The Head House Bride"], "audio": "../horror47/", "theme": true}, {"no": 48, "region_ko": "테마 · 한국 요괴 도감", "region_en": "Theme · A Bestiary of Korea", "titles_ko": ["어둑시니", "그슨대"], "titles_en": ["The Darkness That Grows", "The Thing in the Dark"], "audio": "../horror48/", "theme": true}, {"no": 49, "region_ko": "테마 · 수몰마을·폐광", "region_en": "Theme · The Drowned Villages", "titles_ko": ["물 밑 골목", "갱도 끝"], "titles_en": ["Streets Beneath the Water", "End of the Shaft"], "audio": "../horror49/", "theme": true}, {"no": 50, "region_ko": "테마 · 한국 도시전설 총집", "region_en": "Theme · Urban Legends of Korea", "titles_ko": ["묻는 말", "몇 층이세요"], "titles_en": ["The Question", "Which Floor"], "audio": "../horror50/", "theme": true}];
+let LANG = 'ko';
+
+const map = L.map('map',{zoomControl:true,attributionControl:false}).setView([36.4,127.8],7);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:18}).addTo(map);
+
+const icon = L.divIcon({className:'ghost-pin',
+  html:'<svg width="26" height="34" viewBox="0 0 26 34"><path d="M13 0C6 0 1 5 1 12c0 8 12 22 12 22s12-14 12-22C25 5 20 0 13 0z" fill="#cdbf9a" stroke="#0b0b12" stroke-width="1.5"/><circle cx="13" cy="12" r="4.5" fill="#0b0b12"/></svg>',
+  iconSize:[26,34], iconAnchor:[13,34], popupAnchor:[0,-30]});
+
+const markers = [];
+DATA.filter(d=>!d.theme && d.lat).forEach(d=>{
+  const m = L.marker([d.lat,d.lng],{icon}).addTo(map);
+  m._d = d; markers.push(m);
+  m.bindPopup(popHtml(d));
+});
+
+function popHtml(d){
+  const reg = LANG==='ko'?d.region_ko:d.region_en;
+  const sts = (LANG==='ko'?d.titles_ko:d.titles_en).map(t=>`<div class="st">· ${t}</div>`).join('');
+  const listen = LANG==='ko'?'🔊 밤에 듣기':'🔊 Listen';
+  return `<div class="pop"><div class="vol">VOL.${String(d.no).padStart(2,'0')}</div>
+    <div class="reg">${reg}</div>${sts}
+    <a href="${d.audio}">${listen}</a></div>`;
+}
+
+function renderGrid(){
+  const g = document.getElementById('grid');
+  g.innerHTML = DATA.filter(d=>d.theme).map(d=>{
+    const reg = LANG==='ko'?d.region_ko:d.region_en;
+    const sts = (LANG==='ko'?d.titles_ko:d.titles_en).map(t=>`<div class="st">· ${t}</div>`).join('');
+    const listen = LANG==='ko'?'🔊 밤에 듣기':'🔊 Listen';
+    return `<div class="card"><div class="vol">VOL.${String(d.no).padStart(2,'0')}</div>
+      <div class="reg">${reg}</div>${sts}<a href="${d.audio}">${listen}</a></div>`;
+  }).join('');
+}
+
+function setLang(l){
+  LANG=l;
+  document.getElementById('bko').classList.toggle('on',l==='ko');
+  document.getElementById('ben').classList.toggle('on',l==='en');
+  document.querySelectorAll('[data-ko]').forEach(e=>{e.textContent=e.getAttribute('data-'+l);});
+  markers.forEach(m=>m.setPopupContent(popHtml(m._d)));
+  renderGrid();
+}
+renderGrid();
+</script>
+</body></html>
