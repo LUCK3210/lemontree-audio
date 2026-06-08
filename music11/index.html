@@ -1,0 +1,30 @@
+<!doctype html><html lang="ko"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>반짝반짝 트럼펫 · 음악 그림책 100선</title>
+<style>
+body{font-family:-apple-system,'Noto Serif KR',serif;background:#faf4e6;color:#4a3426;
+text-align:center;display:flex;flex-direction:column;justify-content:center;
+align-items:center;min-height:92vh;margin:0;padding:28px}
+.tag{letter-spacing:3px;color:#a98b6b;font-size:14px;margin-bottom:8px}
+h1{font-size:34px;font-weight:800;line-height:1.3;margin:6px 0 4px;max-width:560px}
+.sub{color:#8a6a4c;font-size:18px;margin-bottom:30px}
+button{font-size:40px;width:120px;height:120px;border:none;border-radius:50%;
+background:#a9743c;color:#fff;box-shadow:0 8px 22px rgba(120,80,40,.35);cursor:pointer}
+button:active{transform:scale(.96)}
+small{display:block;margin-top:22px;color:#b09574}
+.foot{margin-top:36px;color:#c2ab8d;font-size:13px}
+</style>
+<div class="tag">음악 그림책 100선</div>
+<h1>반짝반짝 트럼펫</h1>
+<div class="sub">a shiny brass trumpet with a gentle hinted face on its bell, a bright golden gleam, child-sized 이야기를 다정한 목소리로 들려드릴게요</div>
+<button onclick="t()" id="b">&#9654;</button>
+<small id="s">버튼을 누르면 이야기가 시작돼요</small>
+<audio id="a" src="story.mp3" preload="auto"></audio>
+<div class="foot">위아숨 · wiasoom.com</div>
+<script>
+var a=document.getElementById('a'),b=document.getElementById('b'),s=document.getElementById('s');
+function t(){if(a.paused){a.play();b.innerHTML='&#10073;&#10073;';s.textContent='이야기를 들려주는 중…';}
+else{a.pause();b.innerHTML='&#9654;';s.textContent='다시 들으려면 눌러요';}}
+a.addEventListener('ended',function(){b.innerHTML='&#9654;';s.textContent='다 들었어요! 다시 듣고 싶으면 눌러요';});
+</script>
+</html>
